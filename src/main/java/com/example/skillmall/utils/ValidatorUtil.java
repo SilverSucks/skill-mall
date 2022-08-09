@@ -20,5 +20,4 @@ public class ValidatorUtil {
         Matcher matcher = mobile_pattern.matcher(mobile);
         return matcher.matches();
     }
-
 }

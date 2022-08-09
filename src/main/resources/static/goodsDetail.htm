@@ -45,13 +45,13 @@
                 <span id="seckillTip"></span>
             </td>
             <td>
-<!--                <form id="seckillForm" method="post"-->
-<!--                      action="/seckill/doSeckill">-->
-<!--                    <button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>-->
-<!--                    <input type="hidden" name="goodsId" id="goodsId"/>-->
-<!--                </form>-->
+                <!--                <form id="seckillForm" method="post"-->
+                <!--                      action="/seckill/doSeckill">-->
+                <!--                    <button class="btn btn-primary btn-block" type="submit" id="buyButton">立即秒杀</button>-->
+                <!--                    <input type="hidden" name="goodsId" id="goodsId"/>-->
+                <!--                </form>-->
                 <button class="btn btn-primary btn-block" type="button" id="buyButton" onclick="doSeckill()">立即秒杀
-                <input type="hidden" name="goodsId" id="goodsId"/>
+                    <input type="hidden" name="goodsId" id="goodsId"/>
                 </button>
             </td>
         </tr>
@@ -76,7 +76,8 @@
             getDetails();
         }
     );
-    function doSeckill(){
+
+    function doSeckill() {
         $.ajax({
             url: "/seckill/doSeckill",
             type: "POST",
@@ -85,7 +86,47 @@
             },
             success: function (data) {
                 if (data.code == 200) {
-                    window.location.href = "/orderDetail.htm?orderId=" + data.obj.id;
+                    // window.location.href = "/orderDetail.htm?orderId=" + data.obj.id;
+                    getResult($("#goodsId").val());
+                } else {
+                    layer.msg(data.message);
+                }
+            },
+            error: function () {
+                layer.msg("客户端请求错误");
+            }
+        })
+    }
+
+    function getResult(goodsId) {
+        //加载的动画
+        g_showLoading();
+        //查询并展示的方法
+        $.ajax({
+            url: "/seckill/result",
+            type: "GET",
+            data: {
+                goodsId: goodsId,
+            },
+            success: function (data) {
+                if (data.code == 200) {
+                    var result = data.obj;
+                    if (result < 0) {
+                        layer.msg("对不起，秒杀失败！");
+                    } else if (result == 0) {
+                        setTimeout(function () {
+                            getResult(goodsId);
+                        }, 50);
+                    } else {
+                        layer.confirm("恭喜你，秒杀成功！查看订单？", {
+                            btn: ["确定", "取消"]},
+                                function () {
+                                    window.location.href = "/orderDetail.htm?orderId=" + result;
+                                },
+                                function () {
+                                    layer.close();
+                                });
+                    }
                 } else {
                     layer.msg(data.message);
                 }
